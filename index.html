@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<script src="/js/an.js"></script>
+	<script src="./js/md5.js"></script>
+	<script src="./js/AES.js"></script>
+	<script src="./js/opdb.js"></script>
+	<title>H-Notes</title>
+</head>
+<body>
+<h1>H-Notes</h1>
+<div id="file">
+	<p><b>目录：</b><span id="how"></span></p>
+	<ul class="list" id="main"></ul>
+</div>
+<div class="hide" id="dump_file">
+	<p>
+		<b>目录：</b><span class="path" onclick="awaym(0)">Root</span><b>/</b><span class="path">回收站</span><b>/</b>
+	</p>
+	<ul class="list" id="dump_main"></ul>
+</div>
+<div class="hide" id="img_file">
+	<p>
+		<b>目录：</b><span class="path" onclick="awaym(0)">Root</span><b>/</b><span class="path">图库</span><b>/</b>
+	</p>
+	<ul class="list" id="img_main"></ul>
+</div>
+<p><a href="set.html" target="_blank">设置</a></p>
+
+<div id="under"></div>
+<div class="above" id="need" style="width:20vw;height:20vh">
+	<p><label for="key">请输入密码</label></p>
+	<p><input id="key" type="password"></p>
+	<p>
+		<button onclick="chk_key()">确定</button>
+	</p>
+</div>
+<div class="above hide" id="info" style="width:20vw;height:24vh">
+	<ul id="infos"></ul>
+	<p>
+		<button id="close_info">关闭</button>
+	</p>
+</div>
+<div class="above hide" id="upload" style="width:15vw;height:15vh">
+	<p><input accept="image/*" id="img" type="file"></p>
+	<p>
+		<button id="new_img">上传</button>&emsp;<button id="close_up">取消</button>
+	</p>
+</div>
+<div class="above hide" id="show_img" style="width:50vw;height:60vh">
+	<div id="out_img"><img alt="查看失败" id="pic" src=""></div>
+	<p>
+		<button id="close_show">关闭</button>
+	</p>
+</div>
+
+<div class="hide" id="menu">
+	<div id="showx">
+		<div id="in_multi">批量</div>
+		<div id="out_multi">常规</div>
+		<div id="cut">剪切</div>
+		<div class="warn" id="remove">删除</div>
+		<div id="paste">粘贴</div>
+		<div id="new_file">新建笔记</div>
+		<div id="new_folder">新建文件夹</div>
+	</div>
+	<div id="showy">
+		<div id="rename_folder">重命名</div>
+		<div id="cut_folder">剪切</div>
+		<div class="warn" id="delete_folder">删除</div>
+	</div>
+	<div id="showz">
+		<div id="view_file">查看</div>
+		<div id="edit_file">编辑</div>
+		<div id="rename_file">重命名</div>
+		<div id="cut_file">剪切</div>
+		<div class="warn" id="archive_file">归档</div>
+		<div class="warn" id="remove_file">删除</div>
+	</div>
+	<div id="shows">
+		<div id="in_d_multi">批量</div>
+		<div id="out_d_multi">常规</div>
+		<div id="cut_d">剪切</div>
+	</div>
+	<div id="showt">
+		<div id="view_d_file">查看</div>
+		<div id="cut_d_file">剪切</div>
+		<div class="warn" id="delete_file">删除</div>
+	</div>
+	<div id="showp">
+		<div id="in_g_multi">批量</div>
+		<div id="out_g_multi">常规</div>
+		<div id="delete_g">删除</div>
+		<div id="upload_g">上传</div>
+	</div>
+	<div id="showq">
+		<div id="view_img">查看</div>
+		<div id="rename_img">重命名</div>
+		<div class="warn" id="delete_img">删除</div>
+	</div>
+</div>
+</body>
+<style>
+	.list
+	{
+		font-size:18px;
+		line-height:2;
+		margin-left:1vw;
+	}
+
+	.warn
+	{color:red;}
+
+	.done
+	{color:blue;}
+
+	.dump
+	{color:green;}
+
+	.path
+	{color:lime;}
+
+	.norm
+	{color:black;}
+
+	.hide
+	{display:none;}
+
+	#under
+	{
+		left:0;
+		top:0;
+		width:100vw;
+		height:100vh;
+		position:fixed;
+		background-color:ivory;
+		z-index:2;
+		opacity:0.6;
+	}
+
+	.above
+	{
+		top:50%;
+		left:50%;
+		transform:translate(-50%, -50%);
+		z-index:3;
+		position:fixed;
+		background-color:pink;
+		padding:10px;
+		box-sizing:border-box;
+		text-align:center;
+	}
+
+	button
+	{
+		width:50px;
+		height:30px;
+	}
+
+	#key
+	{
+		width:180px;
+		height:25px;
+	}
+
+	#infos
+	{
+		height:12vh;
+		overflow:auto;
+		text-align:left;
+	}
+
+	#out_img
+	{
+		height:50vh;
+		display:flex;
+		align-items:center;
+		justify-content:center;
+		margin:10px;
+	}
+
+	input[type=checkbox]
+	{
+		zoom:120%;
+		display:none;
+	}
+
+	#menu
+	{
+		position:absolute;
+		background-color:cyan;
+	}
+
+	#menu div div
+	{
+		padding:3px;
+		border:1px solid;
+		zoom:90%;
+	}
+
+	body
+	{margin:1%;}
+</style>
+<script>
+	"use strict";
+
+	class System
+	{
+		constructor()
+		{
+			this.his=["Root"];
+			this.folder={};
+			this.path=[];
+			this.name=[];
+			this.done=[];
+			this.link=[];
+			this.find={};
+		}
+
+		init()
+		{
+			let r=localStorage.pathlist;
+			if(r===undefined)
+			{
+				r="Root/##";
+				localStorage.pathlist=aes.enc_data(r);
+			}
+			else
+				r=aes.dec_data(r);
+			let u="",v="",w=[];
+			for(let i in r)
+			{
+				if(r[i]==="|")
+				{
+					w.push(u);
+					u="";
+				}
+				else if(r[i]==="#")
+				{
+					if(v==="")
+					{
+						v=u;
+						u="";
+					}
+					else
+					{
+						this.folder[v]=w;
+						v="";
+						w=[];
+					}
+				}
+				else
+					u+=r[i];
+			}
+			r=localStorage.notelist;
+			if(r===undefined)
+			{
+				r="";
+				localStorage.notelist=aes.enc_data(r);
+			}
+			else
+				r=aes.dec_data(r);
+			for(let i=0; i<r.length; i++)
+			{
+				if(r[i]==="|")
+				{
+					this.path.push(u);
+					u="";
+				}
+				else if(r[i]==="#")
+				{
+					this.name.push(u);
+					u="";
+					let j=i+1;
+					while(r[i]!=="Y"&&r[i]!=="N")
+						i++;
+					this.link.push(parseInt(r.slice(j,i)));
+					this.done.push(r[i]==="Y");
+				}
+				else
+					u+=r[i];
+			}
+			for(let i in this.path)
+				this.find[[this.path[i],this.name[i]]]=i;
+			ntdb.opendb();
+			init_img();
+			show_list();
+		}
+
+		check_folder(path,name)
+		{
+			if(path==="Root/"&&name==="回收站")
+				return false;
+			for(let i in this.folder[path])
+				if(name===this.folder[path][i])
+					return false;
+			return true;
+		}
+
+		check_file(path,name)
+		{
+			for(let i in this.path)
+				if(path===this.path[i]&&name===this.name[i])
+					return false;
+			return true;
+		}
+
+		store_folder()
+		{
+			let data="";
+			for(let i in this.folder)
+				data+=i+"#"+(this.folder[i].length?this.folder[i].join("|")+"|#":"#");
+			localStorage.pathlist=aes.enc_data(data);
+		}
+
+		store_file()
+		{
+			let data="";
+			for(let i in this.path)
+				data+=this.path[i]+"|"+this.name[i]+"#"+this.link[i]+(this.done[i]?"Y":"N");
+			localStorage.notelist=aes.enc_data(data);
+		}
+
+		new_folder(path,name)
+		{
+			if(!this.check_folder(path,name))
+				return `<li>已存在同名文件夹"<b>${name}</b>"</li>`;
+			this.folder[path].push(name);
+			this.folder[path+name+"/"]=[];
+			return "";
+		}
+
+		move_all(old_full,new_full)
+		{
+			let old_len=old_full.length;
+			for(let i in this.folder)
+				if(!i.indexOf(old_full))
+				{
+					this.folder[new_full+i.slice(old_len)]=this.folder[i];
+					delete this.folder[i];
+				}
+			for(let i in this.path)
+				if(!this.path[i].indexOf(old_full))
+					this.move_file(this.path[i],new_full+this.path[i].slice(old_len),this.name[i]);
+		}
+
+		rename_folder(path,old_name,new_name)
+		{
+			if(!this.check_folder(path,new_name))
+				return `<li>已存在同名文件夹"<b>${new_name}</b>"</li>`;
+			this.folder[path][this.folder[path].indexOf(old_name)]=new_name;
+			this.move_all(path+old_name+"/",path+new_name+"/");
+			return "";
+		}
+
+		move_folder(old_path,new_path,name)
+		{
+			if(!this.check_folder(new_path,name))
+				return `<li>已存在同名文件夹"<b>${name}</b>"</li>`;
+			if(!new_path.indexOf(old_path+name+"/"))
+				return `<li>"<b>${name}</b>"是目标位置的父文件夹</li>`;
+			this.folder[new_path].push(name);
+			this.folder[old_path].splice(this.folder[old_path].indexOf(name),1);
+			this.move_all(old_path+name+"/",new_path+name+"/");
+			return "";
+		}
+
+		delete_folder(path,name)
+		{
+			this.folder[path].splice(this.folder[path].indexOf(name),1);
+			let full=path+name+"/";
+			for(let i in this.folder)
+				if(!i.indexOf(full))
+					delete this.folder[i];
+			for(let i in this.path)
+				if(!this.path[i].indexOf(full))
+					this.remove_file(this.path[i],this.name[i]);
+		}
+
+		new_file(path,name)
+		{
+			if(!this.check_file(path,name))
+				return `<li>已存在同名文件"<b>${name}</b>"</li>`;
+			this.path.push(path);
+			this.name.push(name);
+			this.done.push(false);
+			ntdb.addnote({"info":"","data":""}).then(k=>
+			{
+				this.link.push(k);
+				this.store_file();
+			});
+			this.find[[path,name]]=this.path.length-1;
+			return "";
+		}
+
+		open_file(path,name,mode)
+		{
+			let k=this.link[this.find[[path,name]]];
+			sessionStorage.ntname=name;
+			sessionStorage[mode?"ntvkey":"ntekey"]=k;
+			window.open(mode?"view.html":"edit.html");
+		}
+
+		rename_file(path,old_name,new_name)
+		{
+			if(!this.check_file(path,new_name))
+				return `<li>已存在同名文件"<b>${new_name}</b>"</li>`;
+			let id=this.find[[path,old_name]];
+			this.name[id]=new_name;
+			this.find[[path,new_name]]=id;
+			delete this.find[[path,old_name]];
+			return "";
+		}
+
+		archive_file(path,name)
+		{this.done[this.find[[path,name]]]=true;}
+
+		remove_file(path,name)
+		{
+			let id=this.find[[path,name]];
+			if(!this.check_file("Root/回收站/",name))
+			{
+				let s=1;
+				while(!this.check_file("Root/回收站/",name+"_("+s+")"))
+					s++;
+				this.name[id]=name+"_("+s+")";
+			}
+			this.path[id]="Root/回收站/";
+			this.find[[this.path[id],this.name[id]]]=id;
+			delete this.find[[path,name]];
+		}
+
+		move_file(old_path,new_path,name)
+		{
+			if(!this.check_file(new_path,name))
+				return `<li>已存在同名文件"<b>${name}</b>"</li>`;
+			let id=this.find[[old_path,name]];
+			this.path[id]=new_path;
+			this.find[[new_path,name]]=id;
+			delete this.find[[old_path,name]];
+			return "";
+		}
+
+		delete_file(name)
+		{
+			let id=this.find[["Root/回收站/",name]];
+			this.path.splice(id,1);
+			this.name.splice(id,1);
+			this.done.splice(id,1);
+			ntdb.delnote(this.link[id]);
+			this.link.splice(id,1);
+			this.find={};
+			for(let i in this.path)
+				this.find[[this.path[i],this.name[i]]]=i;
+		}
+	}
+
+	let sys=new System(),img={};
+	let ntdb=new Database("note"),imgdb=new Database("img");
+	let at,mod=false,cut=undefined;
+
+	document.body.onload=()=>
+	{
+		if(localStorage.check_init===undefined)
+		{
+			const K="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+			let re="";
+			for(let i=0; i<9; i++)
+				re+=K[Math.floor(Math.random()*K.length)];
+			localStorage.check_md5=md5(re);
+			localStorage.check_key=CryptoJS.AES.encrypt(re,"").toString();
+			location.href="chpwd.html";
+		}
+		else
+			fi("key").focus();
+	};
+	fi("key").onkeydown=o=>{if(o.key==="Enter") chk_key();};
+
+	fi("main").oncontextmenu=o=>showx(o);
+	fi("dump_main").oncontextmenu=o=>shows(o);
+	fi("img_main").oncontextmenu=o=>showp(o);
+	document.onclick=()=>fi("menu").style.display="none";
+
+	function fi(k)
+	{return document.getElementById(k);}
+
+	function di()
+	{return sys.his.join("/")+"/";}
+
+	function chk_key()
+	{
+		if(aes.check_key(fi("key").value))
+		{
+			aes.key=fi("key").value;
+			sys.init();
+			fi("need").style.display="none";
+			fi("under").style.display="none";
+		}
+		else
+			alert("密码错误，请重试");
+	}
+
+	function input_str(tip,ori)
+	{
+		let re=prompt(tip,ori);
+		if(re===null)
+			return -1;
+		if(re==="")
+			return 0;
+		let _=c=>re.indexOf(c)+1;
+		return _("<")||_(">")||_("/")||_("|")||_("#")?0:re;
+	}
+
+	function show_multi(k)
+	{
+		mod=k;
+		let er=document.getElementsByClassName("er");
+		for(let i=0; i<er.length; i++)
+			er[i].style.display=k?"inline":"none";
+	}
+
+	function get_sel()
+	{
+		let er=document.getElementsByClassName("er");
+		let path=di(),re=[];
+		for(let i=0; i<er.length; i++)
+			if(er[i].checked)
+			{
+				let t=er[i].parentNode.children[1];
+				re.push([path,t.innerText,t.classList.contains("es")]);
+			}
+		return re;
+	}
+
+	function show_info(info)
+	{
+		if(info==="")
+			return;
+		fi("under").style.display="block";
+		fi("info").style.display="block";
+		fi("infos").innerHTML=info;
+	}
+
+	function init_img()
+	{
+		let r=localStorage.imglist;
+		if(r===undefined)
+		{
+			r="";
+			localStorage.imglist=aes.enc_data(r);
+		}
+		else
+			r=aes.dec_data(r);
+		let u="",v="";
+		for(let i in r)
+		{
+			if(r[i]==="|")
+			{
+				v=u;
+				u="";
+			}
+			else if(r[i]==="#")
+			{
+				img[v]=parseInt(u);
+				u=v="";
+			}
+			else
+				u+=r[i];
+		}
+		imgdb.opendb();
+	}
+
+	function new_img(file)
+	{
+		let reader=new FileReader();
+		reader.readAsDataURL(file);
+		reader.onload=o=>
+		{
+			let name=input_str("图片名称：",file.name);
+			if(!~name)
+				return;
+			close_up();
+			fi("img").value="";
+			if(!name)
+				show_info(`<li>输入为空或含有字符"<b>&lt;&gt;#|/</b>"</li>`);
+			else if(name in img)
+				show_info(`<li>已存在同名图片"<b>${name}</b>"</li>`);
+			else
+				imgdb.addnote({"data":o.target.result}).then(k=>
+				{
+					img[name]=k;
+					store_img();
+					show_img();
+				});
+		};
+	}
+
+	function store_img()
+	{
+		let data="";
+		for(let i in img)
+			data+=i+"|"+img[i]+"#";
+		localStorage.imglist=aes.enc_data(data);
+	}
+
+	function close_up()
+	{
+		fi("upload").style.display="none";
+		fi("under").style.display="none";
+	}
+
+	fi("in_multi").onclick=()=>show_multi(true);
+
+	fi("out_multi").onclick=()=>show_multi(false);
+
+	fi("cut").onclick=()=>cut=get_sel();
+
+	fi("remove").onclick=()=>
+	{
+		if(!confirm("确定删除?\n此操作无法恢复"))
+			return;
+		let use=get_sel();
+		for(let i in use)
+			if(use[i][2])
+				sys.delete_folder(use[i][0],use[i][1]);
+			else
+				sys.remove_file(use[i][0],use[i][1]);
+		sys.store_file();
+		sys.store_folder();
+		show_list();
+	};
+
+	fi("paste").onclick=()=>
+	{
+		let path=di(),info="";
+		for(let i in cut)
+			if(cut[i][2])
+				info+=sys.move_folder(cut[i][0],path,cut[i][1]);
+			else
+				info+=sys.move_file(cut[i][0],path,cut[i][1]);
+		show_info(info);
+		cut=undefined;
+		sys.store_file();
+		sys.store_folder();
+		show_list();
+	};
+
+	fi("new_file").onclick=()=>
+	{
+		let name=input_str("新建文件：","");
+		if(!~name)
+			return;
+		if(!name)
+			show_info(`<li>输入为空或含有字符"<b>&lt;&gt;#|/</b>"</li>`);
+		else
+			show_info(sys.new_file(di(),name));
+		show_list();
+	};
+
+	fi("new_folder").onclick=()=>
+	{
+		let name=input_str("新建文件夹：","");
+		if(!~name)
+			return;
+		if(!name)
+			show_info(`<li>输入为空或含有字符"<b>&lt;&gt;#|/</b>"</li>`);
+		else
+			show_info(sys.new_folder(di(),name));
+		sys.store_folder();
+		show_list();
+	};
+
+	fi("rename_folder").onclick=()=>
+	{
+		let name=input_str("重命名文件夹：",at);
+		if(!~name)
+			return;
+		if(!name)
+			show_info(`<li>输入为空或含有字符"<b>&lt;&gt;#|/</b>"</li>`);
+		else
+			show_info(sys.rename_folder(di(),at,name));
+		sys.store_file();
+		sys.store_folder();
+		show_list();
+	};
+
+	fi("cut_folder").onclick=()=>cut=[[di(),at,true]];
+
+	fi("delete_folder").onclick=()=>
+	{
+		if(!confirm("确定删除?\n此操作无法恢复"))
+			return;
+		sys.delete_folder(di(),at);
+		sys.store_file();
+		sys.store_folder();
+		show_list();
+	};
+
+	fi("view_file").onclick=()=>sys.open_file(di(),at,true);
+
+	fi("edit_file").onclick=()=>sys.open_file(di(),at,false);
+
+	fi("rename_file").onclick=()=>
+	{
+		let name=input_str("重命名文件：",at);
+		if(!~name)
+			return;
+		if(!name)
+			show_info(`<li>输入为空或含有字符"<b>&lt;&gt;#|/</b>"</li>`);
+		else
+			show_info(sys.rename_file(di(),at,name));
+		sys.store_file();
+		show_list();
+	};
+
+	fi("cut_file").onclick=()=>cut=[[di(),at,false]];
+
+	fi("archive_file").onclick=()=>
+	{
+		if(!confirm("确定归档?\n此操作无法恢复"))
+			return;
+		sys.archive_file(di(),at);
+		sys.store_file();
+		show_list();
+	};
+
+	fi("remove_file").onclick=()=>
+	{
+		sys.remove_file(di(),at);
+		sys.store_file();
+		show_list();
+	};
+
+	fi("in_d_multi").onclick=()=>show_multi(true);
+
+	fi("out_d_multi").onclick=()=>show_multi(false);
+
+	fi("cut_d").onclick=()=>cut=get_sel();
+
+	fi("view_d_file").onclick=()=>sys.open_file(di(),at,true);
+
+	fi("cut_d_file").onclick=()=>cut=[[di(),at,false]];
+
+	fi("delete_file").onclick=()=>
+	{
+		if(!confirm("确定删除?\n此操作无法恢复"))
+			return;
+		sys.delete_file(at);
+		sys.store_file();
+		show_dump();
+	};
+
+	fi("in_g_multi").onclick=()=>show_multi(true);
+
+	fi("out_g_multi").onclick=()=>show_multi(false);
+
+	fi("delete_g").onclick=()=>
+	{
+		if(!confirm("确定删除?\n此操作无法恢复"))
+			return;
+		let use=get_sel();
+		for(let i in use)
+		{
+			imgdb.delnote(img[use[i][1]]);
+			delete img[use[i][1]];
+		}
+		store_img();
+		show_img();
+	};
+
+	fi("upload_g").onclick=()=>
+	{
+		fi("under").style.display="block";
+		fi("upload").style.display="block";
+	};
+
+	fi("upload").onpaste=o=>
+	{
+		let item=o.clipboardData.items[0];
+		if(item.type==="image/png")
+			new_img(item.getAsFile());
+	};
+
+	fi("new_img").onclick=()=>
+	{
+		let file=fi("img").files;
+		if(file.length)
+			new_img(file[0]);
+	};
+
+	fi("view_img").onclick=()=>
+	{
+		imgdb.readnote(img[at]).then(k=>
+		{
+			fi("pic").src=k["data"];
+			let img=new Image();
+			img.src=k["data"];
+			let t=fi("out_img");
+			img.onload=()=>
+			{
+				fi("under").style.display="block";
+				fi("show_img").style.display="block";
+				fi("pic").style.zoom=Math.min(t.clientWidth/img.width,t.clientHeight/img.height);
+			};
+		});
+	};
+
+	fi("rename_img").onclick=()=>
+	{
+		let name=input_str("重命名图片：",at);
+		if(!~name)
+			return;
+		if(!name)
+			show_info(`<li>输入为空或含有字符"<b>&lt;&gt;#|/</b>"</li>`);
+		else if(name in img)
+			show_info(`<li>已存在同名图片"<b>${name}</b>"</li>`);
+		else
+		{
+			img[name]=img[at];
+			delete img[at];
+			store_img();
+			show_img();
+		}
+	};
+
+	fi("delete_img").onclick=()=>
+	{
+		if(!confirm("确定删除?\n此操作无法恢复"))
+			return;
+		imgdb.delnote(img[at]);
+		delete img[at];
+		store_img();
+		show_img();
+	};
+
+	fi("close_info").onclick=()=>
+	{
+		fi("info").style.display="none";
+		fi("under").style.display="none";
+	};
+
+	fi("close_up").onclick=()=>close_up();
+
+	fi("close_show").onclick=()=>
+	{
+		fi("show_img").style.display="none";
+		fi("under").style.display="none";
+	};
+
+	function show_list()
+	{
+		mod=false;
+		fi("file").style.display="block";
+		fi("dump_file").style.display="none";
+		fi("img_file").style.display="none";
+		let path=di(),re="";
+		for(let i in sys.his)
+			re+=`<span onclick="awaym(${i})" class="path">${sys.his[i]}</span><b>/</b>`;
+		fi("how").innerHTML=re;
+		re="";
+		if(path==="Root/")
+		{
+			re+=`<li style="color:gold"><span class="norm" onclick="show_img()">图库</span></li>`;
+			re+=`<li style="color:gold"><span class="norm" onclick="show_dump()">回收站</span></li>`;
+		}
+		for(let i in sys.folder[path])
+			re+=`<li><input type="checkbox" class="er"><span class="es" onclick="awayn('${sys.folder[path][i]}')">${sys.folder[path][i]}</span></li>`;
+		for(let i in sys.path)
+		{
+			if(path!==sys.path[i])
+				continue;
+			if(sys.done[i])
+				re+=`<li class="done"><input type="checkbox" class="er"><span class="norm et">${sys.name[i]}</span></li>`;
+			else
+				re+=`<li class="warn"><input type="checkbox" class="er"><span class="norm et">${sys.name[i]}</span></li>`;
+		}
+		if(re==="")
+			re="<p><i>文件夹为空</i></p>";
+		fi("main").innerHTML=re;
+		fi("img_main").innerHTML="";
+		fi("dump_main").innerHTML="";
+		let es=document.getElementsByClassName("es");
+		for(let i=0; i<es.length; i++)
+			es[i].oncontextmenu=o=>showy(o);
+		let et=document.getElementsByClassName("et");
+		for(let i=0; i<et.length; i++)
+			et[i].oncontextmenu=o=>showz(o);
+	}
+
+	function show_dump()
+	{
+		mod=false;
+		sys.his=["Root","回收站"];
+		fi("file").style.display="none";
+		fi("dump_file").style.display="block";
+		let re="";
+		for(let i in sys.path)
+			if(sys.path[i]==="Root/回收站/")
+				re+=`<li class="dump"><input type="checkbox" class="er"><span class="norm ed">${sys.name[i]}</span></li>`;
+		if(re==="")
+			re="<p><i>回收站为空</i></p>";
+		fi("main").innerHTML="";
+		fi("dump_main").innerHTML=re;
+		let ed=document.getElementsByClassName("ed");
+		for(let i=0; i<ed.length; i++)
+			ed[i].oncontextmenu=o=>showt(o);
+	}
+
+	function show_img()
+	{
+		mod=false;
+		fi("file").style.display="none";
+		fi("img_file").style.display="block";
+		let re="";
+		for(let i in img)
+			re+=`<li class="img"><input type="checkbox" class="er"><span class="norm eg">${i}</span></li>`;
+		if(re==="")
+			re="<p><i>图库为空</i></p>";
+		fi("main").innerHTML="";
+		fi("img_main").innerHTML=re;
+		let eg=document.getElementsByClassName("eg");
+		for(let i=0; i<eg.length; i++)
+			eg[i].oncontextmenu=o=>showq(o);
+	}
+
+	function awaym(r)
+	{
+		sys.his=sys.his.slice(0,r+1);
+		show_list();
+	}
+
+	function awayn(r)
+	{
+		sys.his.push(r);
+		show_list();
+	}
+
+	function showx(o)
+	{
+		if(o.target.tagName==="SPAN")
+			return false;
+		if(cut===undefined)
+			fi("paste").style.display="none";
+		else
+			fi("paste").style.display="block";
+		if(mod)
+		{
+			fi("in_multi").style.display="none";
+			fi("out_multi").style.display="block";
+			fi("cut").style.display="block";
+			fi("remove").style.display="block";
+		}
+		else
+		{
+			fi("in_multi").style.display="block";
+			fi("out_multi").style.display="none";
+			fi("cut").style.display="none";
+			fi("remove").style.display="none";
+		}
+		return hide(o,1);
+	}
+
+	function showy(o)
+	{return hide(o,2);}
+
+	function showz(o)
+	{
+		if(sys.done[sys.find[[di(),o.target.innerText]]])
+		{
+			fi("edit_file").style.display="none";
+			fi("rename_file").style.display="none";
+			fi("archive_file").style.display="none";
+		}
+		else
+		{
+			fi("edit_file").style.display="block";
+			fi("rename_file").style.display="block";
+			fi("archive_file").style.display="block";
+		}
+		return hide(o,3);
+	}
+
+	function shows(o)
+	{
+		if(o.target.tagName==="SPAN")
+			return false;
+		if(mod)
+		{
+			fi("in_d_multi").style.display="none";
+			fi("out_d_multi").style.display="block";
+			fi("cut_d").style.display="block";
+		}
+		else
+		{
+			fi("in_d_multi").style.display="block";
+			fi("out_d_multi").style.display="none";
+			fi("cut_d").style.display="none";
+		}
+		return hide(o,4);
+	}
+
+	function showt(o)
+	{return hide(o,5);}
+
+	function showp(o)
+	{
+		if(o.target.tagName==="SPAN")
+			return false;
+		if(mod)
+		{
+			fi("in_g_multi").style.display="none";
+			fi("out_g_multi").style.display="block";
+			fi("delete_g").style.display="block";
+		}
+		else
+		{
+			fi("in_g_multi").style.display="block";
+			fi("out_g_multi").style.display="none";
+			fi("delete_g").style.display="none";
+		}
+		return hide(o,6);
+	}
+
+	function showq(o)
+	{return hide(o,7);}
+
+	function hide(o,k)
+	{
+		at=o.target.innerText;
+		fi("menu").style.left=String(o.pageX)+"px";
+		fi("menu").style.top=String(o.pageY)+"px";
+		fi("showx").style.display=k===1?"block":"none";
+		fi("showy").style.display=k===2?"block":"none";
+		fi("showz").style.display=k===3?"block":"none";
+		fi("shows").style.display=k===4?"block":"none";
+		fi("showt").style.display=k===5?"block":"none";
+		fi("showp").style.display=k===6?"block":"none";
+		fi("showq").style.display=k===7?"block":"none";
+		fi("menu").style.display="block";
+		return false;
+	}
+
+	let channel=new window.BroadcastChannel("key");
+	channel.onmessage=o=>
+	{
+		if(o.data==="")
+			channel.postMessage(aes.key);
+	};
+</script>
+</html>
