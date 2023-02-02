@@ -23,6 +23,13 @@
 	<label><textarea id="code" readonly></textarea></label>
 	<p class="codes"><a href="#" onclick="view_code(false)">内容</a></p>
 </div>
+<div style="z-index:2">
+	<div id="tiny" onclick="show_list(true)"><p><b>目录</b></p></div>
+	<div class="hide" id="huge">
+		<p><b>目录</b><a href="#" onclick="show_list(false)" style="font-size:smaller">[关闭]</a></p>
+		<ul id="list" style="margin-inline-start:-0.5em;text-align:left"></ul>
+	</div>
+</div>
 <p class="infos" id="toinfo" style="z-index:2"><a href="#" onclick="view_info(1)">属性</a></p>
 <div id="back">
 	<div class="hide" id="auth">
@@ -51,6 +58,31 @@
 		height:85vh;
 		position:fixed;
 		font-size:17px;
+	}
+
+	#tiny
+	{
+		top:45vh;
+		right:0;
+		width:1vw;
+		height:10vh;
+		position:fixed;
+		background-color:wheat;
+		padding:4px;
+	}
+
+	#huge
+	{
+		top:35vh;
+		right:0;
+		width:9.4vw;
+		height:30vh;
+		position:fixed;
+		background-color:wheat;
+		padding:2px;
+		overflow:auto;
+		text-align:center;
+		white-space:nowrap;
 	}
 
 	#back
@@ -199,8 +231,18 @@
 	function use_info()
 	{fi("like").innerText="#main{"+info["show"].replaceAll(";"," !important;")+"}";}
 
+	function show_list(r)
+	{
+		fi("tiny").style.display=r?"none":"block";
+		fi("huge").style.display=r?"block":"none";
+	}
+
 	function show_note()
-	{fi("main").innerHTML=O(data,show_note)[0];}
+	{
+		let R=O(data,show_note);
+		fi("main").innerHTML=R[0];
+		fi("list").innerHTML=R[1];
+	}
 
 	function view_info(r)
 	{

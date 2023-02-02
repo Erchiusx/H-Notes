@@ -23,6 +23,13 @@
 <button class="buttons" id="unsave" style="width:10vw">取消</button>
 <span style="margin-left:1.5vw">字数统计：共</span><b id="numb"></b><span>字</span>
 <div id="view" onscroll=Ns()></div>
+<div style="z-index:3">
+	<div id="tiny" onclick="show_list(true)"><p><b>目录</b></p></div>
+	<div class="hide" id="huge">
+		<p><b>目录</b><a href="#" onclick="show_list(false)" style="font-size:smaller">[关闭]</a></p>
+		<ul id="list" style="margin-inline-start:-0.5em;text-align:left"></ul>
+	</div>
+</div>
 <p id="refresh"><a href="#" onclick="init_img().then(show_note)">刷新</a></p>
 <p class="infos" id="toinfo"><a href="#" onclick="view_info(1)">属性</a></p>
 <div id="back">
@@ -66,6 +73,31 @@
 		margin:2%;
 		padding:1%;
 		overflow:auto;
+	}
+
+	#tiny
+	{
+		top:45vh;
+		right:0;
+		width:1vw;
+		height:10vh;
+		position:absolute;
+		background-color:wheat;
+		padding:4px;
+	}
+
+	#huge
+	{
+		top:35vh;
+		right:0;
+		width:9.4vw;
+		height:30vh;
+		position:absolute;
+		background-color:wheat;
+		padding:2px;
+		overflow:auto;
+		text-align:center;
+		white-space:nowrap;
 	}
 
 	#refresh
@@ -300,11 +332,18 @@
 		fi("like").innerText="#view{"+info["show"].replaceAll(";"," !important;")+"}";
 	}
 
+	function show_list(r)
+	{
+		fi("tiny").style.display=r?"none":"block";
+		fi("huge").style.display=r?"block":"none";
+	}
+
 	function show_note()
 	{
 		let R=O(get_text(),show_note);
 		fi("view").innerHTML=R[0];
-		fi("numb").innerText=R[1];
+		fi("list").innerHTML=R[1];
+		fi("numb").innerText=R[2];
 	}
 
 	function show_save(flag)
@@ -429,6 +468,15 @@
 				type=false;
 				show_auto();
 			}
+		if(o.key==="#")
+		{
+			get_sel();
+			if(off&&res[off-1]==="$")
+			{
+				o.preventDefault();
+				ins_text("##",1);
+			}
+		}
 		if(o.key==="\\"&&chk_latex())
 		{
 			type=true;

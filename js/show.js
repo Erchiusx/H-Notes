@@ -5,7 +5,7 @@ function init_func()
 	let r=localStorage.funlist;
 	if(r===undefined)
 	{
-		r="#|N<h2>$</h2>|/|N<i>$</i>|*|N<b>$</b>|?|N<del>$</del>|!|N<ins>$</ins>|c|Y<span style=\"color:@\">$</span>|";
+		r="#|N<h2 id=\"$\">$</h2>|/|N<i>$</i>|*|N<b>$</b>|?|N<del>$</del>|!|N<ins>$</ins>|c|Y<span style=\"color:@\">$</span>|";
 		localStorage.funlist=aes.enc_data(r);
 	}
 	else
@@ -36,7 +36,7 @@ function init_func()
 function O(to,from)
 {
 	let all=to.split("\n");
-	let re="",c=0;
+	let re="",tr="",c=0;
 	let flag=[],hide=0,uf=0;
 	flag.push(0);
 	for(let i=0; i<all.length; i++)
@@ -110,11 +110,15 @@ function O(to,from)
 							});
 					else
 						res+=`<img alt="找不到图片" src="" style="zoom:${k2}">`;
-				if(k1 in fun)
+				else if(k1 in fun)
+				{
 					if(fun[k1][1])
 						res+=fun[k1][0].replaceAll("@",k2).replaceAll("$",k3);
 					else
 						res+=fun[k1][0].replaceAll("$",k3);
+					if(k1==="#")
+						tr+=`<li><a href="#${k3}">${k3}</a></li>`;
+				}
 				else
 					res+=k3;
 				if(k1!=="img")
@@ -139,7 +143,10 @@ function O(to,from)
 			}
 			else
 			{
-				res+=all[i][j];
+				if(all[i][j]==="<"||all[i][j]===">")
+					res+=all[i][j]==="<"?"&lt;":"&gt;";
+				else
+					res+=all[i][j];
 				c++;
 			}
 		}
@@ -149,5 +156,5 @@ function O(to,from)
 		if(uf===1||uf===2)
 			re+="<li>"+res+"</li>";
 	}
-	return [re,c];
+	return [re,tr,c];
 }
