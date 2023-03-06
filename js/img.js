@@ -4,28 +4,30 @@ async function init_img()
 {
 	img={};
 	imgs={};
-	return new Promise(resolve=>
-	{
+	return new Promise(r=>
 		imgdb.opendb().then(()=>
 		{
-			let r=aes.dec_data(localStorage.imglist);
-			let u="",v="";
-			for(let i in r)
+			let s=localStorage.imglist;
+			if(s===undefined)
+				localStorage.imglist=aes.enc_data(s="");
+			else
+				s=aes.dec_data(s);
+			let u="";
+			for(let i=0; i<s.length; i++)
 			{
-				if(r[i]==="|")
+				if(s[i]==="|")
+					u+="/";
+				else if(s[i]==="#")
 				{
-					v=u;
+					let j=++i;
+					while(s[i]!=="#")
+						i++;
+					img[u]=parseInt(s.slice(j,i));
 					u="";
 				}
-				else if(r[i]==="#")
-				{
-					img[v]=parseInt(u);
-					u=v="";
-				}
 				else
-					u+=r[i];
+					u+=s[i];
 			}
-			resolve();
-		});
-	});
+			r();
+		}));
 }
